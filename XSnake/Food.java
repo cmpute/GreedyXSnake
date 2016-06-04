@@ -7,7 +7,7 @@ import java.awt.Graphics;
 public class Food extends MapEntity {
 
 	public static final int FoodScore = 10;
-	public Food(SnakeMap parentMap, int x, int y)
+	public Food(SnakeGame parentMap, int x, int y)
 	{
 		super(parentMap,x,y);
 	}
@@ -16,7 +16,7 @@ public class Food extends MapEntity {
 	 * @param parentMap
 	 * 关联的地图
 	 */
-	public Food(SnakeMap parentMap)
+	public Food(SnakeGame parentMap)
 	{
 		super(parentMap);
 	}
@@ -25,7 +25,7 @@ public class Food extends MapEntity {
 	public void DrawObject(Graphics g) {
 		// TODO Auto-generated method stub
 		g.setColor(Color.GREEN);
-		g.drawRect(locx*AreaSize, locy*AreaSize, AreaSize, AreaSize);
+		g.fillRect(locx*AreaSize, locy*AreaSize, AreaSize+1, AreaSize+1);
 	}
 	
 	/**

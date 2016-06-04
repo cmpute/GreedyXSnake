@@ -1,14 +1,15 @@
 package XSnake;
 
-import java.util.Random;
+import java.io.Serializable;
+import java.util.*;
 
 /**
  * 地图中的实体类，包括食物、道具等
  *
  */
-public abstract class MapEntity extends MapObject {
-	SnakeMap map;
-	public MapEntity(SnakeMap parentMap, int x, int y)
+public abstract class MapEntity extends MapObject implements Serializable {
+	SnakeGame map;
+	public MapEntity(SnakeGame parentMap, int x, int y)
 	{
 		locx = x;
 		locy = y;
@@ -20,7 +21,7 @@ public abstract class MapEntity extends MapObject {
 	 * @param parentMap
 	 * 关联的地图
 	 */
-	public MapEntity(SnakeMap parentMap)
+	public MapEntity(SnakeGame parentMap)
 	{
 		map = parentMap;
 		GenerateLocation();

@@ -2,13 +2,16 @@ package XSnake;
 
 import java.util.*;
 import java.util.List;
+import java.io.IOException;
+import java.io.Serializable;
 import java.awt.*;
 
-public class Snake {
+public class Snake implements Serializable{
+
 	/**
 	 * 蛇的身体类
 	 */
-	public class SnakeBody extends MapObject
+	public class SnakeBody extends MapObject implements Serializable
 	{
 		BodyDirection dir;
 		public SnakeBody(int x, int y, BodyDirection direction)
@@ -38,23 +41,23 @@ public class Snake {
 	
 	public static final int InitLength = 20;
 	List<SnakeBody> body = new ArrayList<SnakeBody>();	//储存身体的List
-	SnakeMap map;			//与蛇关联的地图实例
+	SnakeGame map;			//与蛇关联的地图实例
 	int score = 0;			//该玩家所获分数
-	boolean CanTurnBack = false;	//蛇是否可以掉头
+	public static boolean CanTurnBack = true;	//蛇是否可以掉头
+	public static boolean Collidable = false;      //蛇身是否算障碍物
 	boolean CrossWall = false;		//存储穿边墙信息
-	boolean Collidable = true;      //蛇身是否算障碍物
 	SnakeBody nextpart; //预测下一个body出现的位置
 	int drawStyle = 0;  //蛇身的样式，用于区别玩家
 	int bodytoadd = 0;  //存储长长的部分
 	
-	public Snake(SnakeMap parentMap)
+	public Snake(SnakeGame parentMap)
 	{
 		map = parentMap;
 		body.add(new SnakeBody(20, 20, BodyDirection.Right));
 		GenerateNext();
 		AddBody(InitLength - 1);
 	}
-	public Snake(SnakeMap parentMap,int startx,int starty)
+	public Snake(SnakeGame parentMap,int startx,int starty)
 	{
 		map = parentMap;
 		body.add(new SnakeBody(startx, starty, BodyDirection.Right));
@@ -161,24 +164,26 @@ public class Snake {
 		}
 		body.get(0).dir = direction;
 		GenerateNext();
+		//TODO: Socket发送方向信息
 	}
 	
 	private void GenerateNext()
 	{
 		SnakeBody head = body.get(0);
+		CrossWall = false;
 		switch (head.dir) {
 		case Left:
 			if (head.locx <= 0) {
-				if (map.NoSideWall)
-					head = new SnakeBody(map.MapMaxX, head.locy, head.dir);
+				if (SnakeGame.NoSideWall)
+					head = new SnakeBody(SnakeGame.MapMaxX, head.locy, head.dir);
 				else
 					CrossWall = true;
 			}
 			nextpart = new SnakeBody(head.locx - 1, head.locy, head.dir);
 			break;
 		case Right:
-			if (head.locx >= map.MapMaxX - 1) {
-				if (map.NoSideWall)
+			if (head.locx >= SnakeGame.MapMaxX - 1) {
+				if (SnakeGame.NoSideWall)
 					head = new SnakeBody(-1, head.locy, head.dir);
 				else
 					CrossWall = true;
@@ -187,16 +192,16 @@ public class Snake {
 			break;
 		case Up:
 			if (head.locy <= 0) {
-				if (map.NoSideWall)
-					head = new SnakeBody(head.locx, map.MapMaxY, head.dir);
+				if (SnakeGame.NoSideWall)
+					head = new SnakeBody(head.locx, SnakeGame.MapMaxY, head.dir);
 				else
 					CrossWall = true;
 			}
 			nextpart = new SnakeBody(head.locx, head.locy - 1, head.dir);
 			break;
 		case Down:
-			if (head.locy >= map.MapMaxY - 1) {
-				if (map.NoSideWall)
+			if (head.locy >= SnakeGame.MapMaxY - 1) {
+				if (SnakeGame.NoSideWall)
 					head = new SnakeBody(head.locx, -1, head.dir);
 				else
 					CrossWall = true;
