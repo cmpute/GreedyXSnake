@@ -4,11 +4,13 @@ import java.io.*;
 import java.net.*;
 import java.util.List;
 
+import javax.swing.JOptionPane;
+
 public class WebInterface
 {
 	SnakeGame host;
 	Socket connect;
-	boolean isserver,gamestarted=false;
+	boolean isserver,gamestarted=false,gameNpaused=true;
 	ConnectStatus stat = ConnectStatus.NoTask;
 	public enum ConnectStatus
 	{
@@ -18,6 +20,11 @@ public class WebInterface
 	/*Constant Fields*/
 	static final int MAP_PARAMS=0x0020;
 	static final int GAME_START=0x0021;
+	static final int DIRECT_CHANGE=0x0000;
+	static final int PLAYER_PAUSE=0x0022;
+	static final int SPEED_UP=0x0023;
+	static final int SPEED_DOWN=0x0024;
+	static final int SYNC_ENTITY=0x0030;
 	public WebInterface(Socket connect, boolean isServer)
 	{
 		this.connect = connect;
@@ -114,8 +121,147 @@ public class WebInterface
 		oos.flush();
 		return true;
 	}
+	
+	public boolean CheckStart() throws IOException
+	{
+		if(isserver)
+		{
+			connect.getOutputStream().write(GAME_START);
+			if(connect.getInputStream().read()==GAME_START)
+				return true;
+			return false;
+		}
+		else
+		{
+			if(connect.getInputStream().read()!=GAME_START)
+				return false;
+			connect.getOutputStream().write(GAME_START);
+			return true;
+		}
+	}
+	
+	public void StartGameThread()
+	{
+		gamestarted = true;
+		//刷新线程
+		new Thread(new Runnable(){
+			public void run() {
+				while (gameNpaused) {
+					try {
+						Thread.sleep(host.Sleeptime);
+						//host.neti.SyncMap();
+						host.ProcessStep();
+						host.repaint();
+					} catch (InterruptedException e) {	e.printStackTrace();}
+				}
+			}
+		}).start();
+		//更新监听线程
+		new Thread(new Runnable(){
+			public void run() {
+				InputStream ins;
+				try {
+					ins = connect.getInputStream();
+					while (gamestarted){
+						int temp = ins.read();
+						//判断信息
+						if(temp<0x0010){
+							host.snake1.SetDirection(Snake.BodyDirection.valueOf(temp&0x000f));
+							continue;
+						}
+						if((temp>=SYNC_ENTITY)&&(temp<SYNC_ENTITY+SnakeGame.MaxEntityNum))
+						{
+							int index = temp - SYNC_ENTITY;
+							host.entities[index].locx = ins.read();
+							host.entities[index].locy = ins.read();
+							continue;
+						}
+						switch(temp)
+						{
+						case PLAYER_PAUSE:
+							host.snake1.ChangePauseState();
+							break;
+						case SPEED_UP:
+							host.SpeedUp();
+							break;
+						case SPEED_DOWN:
+							host.SpeedDown();
+							break;
+						}
+					}
+				} catch (IOException ie) {JOptionPane.showMessageDialog(null, "连接错误:"+ie.getMessage(), "错误", JOptionPane.ERROR_MESSAGE);ie.printStackTrace();}
+			}
+		}).start();
+	}
+	
 	public void SendDirection()
 	{
-		 
+		new ParamThread(DIRECT_CHANGE + host.s_self.body.get(0).dir.ordinal()).start();
+	}
+	
+	public void PlayerPause()
+	{
+		new ParamThread(PLAYER_PAUSE).start();
+	}
+	
+	public void SpeedUp()
+	{
+		new ParamThread(SPEED_UP).start();
+	}
+	public void SpeedDown()
+	{
+		new ParamThread(SPEED_DOWN).start();
+	}
+	public void SyncMap()
+	{
+		//TODO:难点，要检查双方地图内容是否一致
+		for(int i =0;i<host.entities.length;i++)
+			SyncEntity(i);
+	}
+	public void SyncEntity(int index)
+	{
+		if(isserver)
+			new ParamValueThread(SYNC_ENTITY+index, host.entities[index].locx, host.entities[index].locy).start();;
+	}
+	class ParamThread extends Thread
+	{
+		int param;
+		public ParamThread(int parameter)
+		{
+			param = parameter;
+		}
+		public void run()
+		{
+			new Thread(new Runnable(){
+				public void run() {
+					try {
+						connect.getOutputStream().write(param);
+					} catch (IOException ie) {JOptionPane.showMessageDialog(null, "连接错误:"+ie.getMessage(), "错误", JOptionPane.ERROR_MESSAGE);ie.printStackTrace();}
+				}
+			}).start();
+		}
+	}
+	class ParamValueThread extends Thread
+	{
+		int param;
+		int[] vals;
+		public ParamValueThread(int parameter, int... values)
+		{
+			param = parameter;
+			vals = values;
+		}
+		public void run()
+		{
+			new Thread(new Runnable(){
+				public void run() {
+					try {
+						connect.getOutputStream().write(param);
+						for(int i =0;i<vals.length;i++)
+							connect.getOutputStream().write(vals[i]);
+						connect.getOutputStream().flush();
+					} catch (IOException ie) {JOptionPane.showMessageDialog(null, "连接错误:"+ie.getMessage(), "错误", JOptionPane.ERROR_MESSAGE);ie.printStackTrace();}
+				}
+			}).start();
+		}
 	}
 }

@@ -76,6 +76,7 @@ public class StartingPage extends JPanel implements ActionListener{
 		this.add(tp);
 	}
 	
+	public static final int checksleeptime = 1000;
 	public void actionPerformed(ActionEvent e)
 	{
 		if(e.getSource().equals(startserver))
@@ -103,11 +104,19 @@ public class StartingPage extends JPanel implements ActionListener{
 						gamemap = new SnakeGame();
 						wi.AssociateGame(gamemap);
 						wi.SyncSnake();
-						lbl_status.setText("同步成功，游戏即将开始");
-						StartGame(wi);
+						lbl_status.setText("同步成功，游戏即将开始...3");
+						gamemap.neti = wi;
+						Thread.sleep(checksleeptime);
+						lbl_status.setText("同步成功，游戏即将开始...2");
+						Thread.sleep(checksleeptime);
+						lbl_status.setText("同步成功，游戏即将开始...1");
+						Thread.sleep(checksleeptime);
+						gamemap.neti.CheckStart();
+						//gamemap.neti.SyncMap();
+						StartGame();
 					}
 					catch (IOException ie) {JOptionPane.showMessageDialog(null, "连接错误:"+ie.getMessage(), "错误", JOptionPane.ERROR_MESSAGE);ie.printStackTrace();} 
-					//catch (InterruptedException ine) {ine.printStackTrace();}
+					catch (InterruptedException ine) {ine.printStackTrace();}
 				}
 			}).start();
 
@@ -141,8 +150,23 @@ public class StartingPage extends JPanel implements ActionListener{
 				gamemap = new SnakeGame();
 				wi.AssociateGame(gamemap);
 				wi.WaitForSnake();
-				lbl_status.setText("同步成功，游戏即将开始");
-				StartGame(wi);
+				lbl_status.setText("同步成功，游戏即将开始...3");
+				gamemap.neti = wi;
+				new Thread(new Runnable(){
+					public void run(){
+						try{
+							Thread.sleep(checksleeptime);
+							lbl_status.setText("同步成功，游戏即将开始...2");
+							Thread.sleep(checksleeptime);
+							lbl_status.setText("同步成功，游戏即将开始...1");
+							Thread.sleep(checksleeptime);
+							gamemap.neti.CheckStart();
+							//gamemap.neti.SyncMap();
+							StartGame();
+						}catch (InterruptedException ine) {ine.printStackTrace();} 
+						catch (IOException e) {e.printStackTrace();}
+					}
+				}).start();
 			}
 			catch(IOException ie) {JOptionPane.showMessageDialog(null, "连接错误:"+ie.getMessage(), "错误", JOptionPane.ERROR_MESSAGE);ie.printStackTrace();} 
 			catch(Exception ex){ex.printStackTrace();}
@@ -151,15 +175,14 @@ public class StartingPage extends JPanel implements ActionListener{
 	
 	public SnakeGame gamemap;	
 	
-	public void StartGame(WebInterface net)
+	public void StartGame()
 	{
 		JFrame Game = new JFrame();
-		gamemap.neti = net;
 		Game.add(gamemap);
-		Game.addKeyListener(gamemap.gamecontrol);
 		Game.setTitle("Greedy Snake");
-		gamemap.StartGame();
-		Game.setBounds(200,100,805,610);
+		Game.addKeyListener(gamemap);
+		gamemap.neti.StartGameThread();
+		Game.setBounds(par.getBounds().x+200,par.getBounds().y+100,805,610);
 		Game.setVisible(true);
 	}
 }

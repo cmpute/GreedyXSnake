@@ -36,7 +36,24 @@ public class Snake implements Serializable{
 	 * 蛇身的方向枚举，用于绘制身体
 	 */
 	public enum BodyDirection{
-		Left,Up,Right,Down
+		Left,Up,Right,Down;
+		
+		public static BodyDirection valueOf(int val)
+		{
+			switch(val)
+			{
+			case 0:
+				return BodyDirection.Left;
+			case 1:
+				return BodyDirection.Up;
+			case 2:
+				return BodyDirection.Right;
+			case 3:
+				return BodyDirection.Down;
+			default:
+				return null;
+			}
+		}
 	}
 	
 	public static final int InitLength = 20;
@@ -93,9 +110,14 @@ public class Snake implements Serializable{
 			CrossWall = false;
 			return true;
 		}
-		for(MapEntity e : map.entities)
-			if(nextpart.IsHit(e))
-				e.TakeEffect(this);
+		//synchronized(map.entities){
+		for(int i = 0;i<map.entities.length;i++)
+			if(nextpart.IsHit(map.entities[i]))
+			{
+				map.entities[i].TakeEffect(this);
+				map.neti.SyncEntity(i);
+			}
+		//}
 		return map.GridBlocked[nextpart.locx][nextpart.locy];
 	}
 	/**
@@ -103,6 +125,7 @@ public class Snake implements Serializable{
 	 */
 	public void MoveStep()
 	{
+		if(isNmoving) return;
 		CutTail();
 		AddBody();
 	}
@@ -209,6 +232,20 @@ public class Snake implements Serializable{
 			nextpart = new SnakeBody(head.locx, head.locy + 1, head.dir);
 			break;
 		}
+	}
+	
+	boolean isNmoving = false;
+	public synchronized void Pause()
+	{
+		isNmoving = true;
+	}
+	public synchronized void Continue()
+	{
+		isNmoving = false;
+	}
+	public synchronized void ChangePauseState()
+	{
+		isNmoving = !isNmoving;
 	}
 }
 

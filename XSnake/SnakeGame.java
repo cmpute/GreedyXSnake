@@ -1,54 +1,61 @@
 package XSnake;
 import java.awt.*;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
-
+import java.awt.event.*;
 import javax.swing.*;
 
 import XSnake.Snake.BodyDirection;
 
-public class SnakeGame extends JPanel{
+public class SnakeGame extends JPanel implements KeyListener{
 	public static int MapMaxX = 49,MapMaxY = 35;								//地图大小参数
 	public final static int MaxSleep = 1000,MinSleep = 20;						//最大最小刷新时间
+	public final static int MaxEntityNum = 16;									//最多entity数
 	int Sleeptime = 80;															//刷新时间，控制游戏速度
 	public static boolean NoSideWall = true;									//地图边缘是否可以通过
 	public boolean[][] GridBlocked = new boolean[MapMaxX][MapMaxY];				//障碍物标志
 	public boolean[][] GridState = new boolean[MapMaxX][MapMaxY];				//是否有物体标志
-	public Snake s_self = new Snake(this), snake1;			//两名玩家
-	public MapEntity[] entities = new MapEntity[]{new Food(this), new Food(this)};		//食物、道具等等
+	public Snake s_self = new Snake(this), snake1;								//两名玩家
+	public MapEntity[] entities = new MapEntity[]{new Food(this), new Food(this)};		//食物、道具等等，由于传输限制，最大为MaxEntityNum个entity
 	public Obstacle[] obstacles;
 	public WebInterface neti;
-	boolean IsPause;
-	public KeyAdapter gamecontrol = new KeyAdapter() {
-		public void keyPressed(KeyEvent arg0) {
-			switch (arg0.getKeyCode()) {
-			case KeyEvent.VK_LEFT:
-				s_self.SetDirection(BodyDirection.Left);
-				break;
-			case KeyEvent.VK_RIGHT:
-				s_self.SetDirection(BodyDirection.Right);
-				break;
-			case KeyEvent.VK_UP:
-				s_self.SetDirection(BodyDirection.Up);
-				break;
-			case KeyEvent.VK_DOWN:
-				s_self.SetDirection(BodyDirection.Down);
-				break;
-            case KeyEvent.VK_SPACE:
-            case KeyEvent.VK_P:
-            	ChangePauseState();
-                break;
-            case KeyEvent.VK_ADD:
-            case KeyEvent.VK_PAGE_UP:
-            	SpeedUp();
-                break;
-            case KeyEvent.VK_SUBTRACT:
-            case KeyEvent.VK_PAGE_DOWN:
-            	SpeedDown();
-                break;
-			}
+	public int timestamp = 0;
+
+	public void keyPressed(KeyEvent arg0) {
+		switch (arg0.getKeyCode()) {
+		case KeyEvent.VK_LEFT:
+			s_self.SetDirection(BodyDirection.Left);
+			neti.SendDirection();
+			break;
+		case KeyEvent.VK_RIGHT:
+			s_self.SetDirection(BodyDirection.Right);
+			neti.SendDirection();
+			break;
+		case KeyEvent.VK_UP:
+			s_self.SetDirection(BodyDirection.Up);
+			neti.SendDirection();
+			break;
+		case KeyEvent.VK_DOWN:
+			s_self.SetDirection(BodyDirection.Down);
+			neti.SendDirection();
+			break;
+        case KeyEvent.VK_SPACE:
+        	s_self.ChangePauseState();
+        	neti.PlayerPause();
+            break;
+        case KeyEvent.VK_P:
+        	//暂停游戏
+        	break;
+        case KeyEvent.VK_ADD:
+        case KeyEvent.VK_PAGE_UP:
+        	neti.SpeedUp();
+        	SpeedUp();
+            break;
+        case KeyEvent.VK_SUBTRACT:
+        case KeyEvent.VK_PAGE_DOWN:
+        	neti.SpeedDown();
+        	SpeedDown();
+            break;
 		}
-	};
+	}
 	
 	public SnakeGame()
 	{
@@ -56,22 +63,7 @@ public class SnakeGame extends JPanel{
 		//super();
 		
 	}
-	public void StartGame()
-	{
-		new Thread(new Runnable(){
-		public void run() {
-			while (true) {
-				try {
-					Thread.sleep(Sleeptime);
-					repaint();
-					ProcessStep();
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-			}
-		}
-	}).start();
-	}
+
 	public void paint(Graphics g)
 	{
 		//TODO: 增加背景以后可以去掉super的repaint
@@ -87,29 +79,16 @@ public class SnakeGame extends JPanel{
 	}
 	public void ProcessStep()
 	{
-		if(IsPause)
-			return;
-		if(s_self.CheckHit())Pause();//TODO: 增加撞墙以后的处理
+		timestamp++;
+		if(s_self.CheckHit())s_self.Pause();//TODO: 增加撞墙以后的处理
 		else s_self.MoveStep();
 		if(snake1!=null)
-		if(snake1.CheckHit())Pause();//TODO: 增加撞墙以后的处理
+		if(snake1.CheckHit())snake1.Pause();//TODO: 增加撞墙以后的处理
 		else snake1.MoveStep();
 	}
 	public void SetStepTime(int steptime)
 	{
 		Sleeptime = steptime;
-	}
-	public synchronized void Pause()
-	{
-		IsPause = true;
-	}
-	public synchronized void Continue()
-	{
-		IsPause = false;
-	}
-	public synchronized void ChangePauseState()
-	{
-		IsPause = !IsPause;
 	}
 	public synchronized void SpeedUp()
 	{
@@ -132,6 +111,18 @@ public class SnakeGame extends JPanel{
 	}
 	public void SetStatusText(WebInterface.ConnectStatus status)
 	{
+		
+	}
+
+	@Override
+	public void keyReleased(KeyEvent arg0) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void keyTyped(KeyEvent arg0) {
+		// TODO Auto-generated method stub
 		
 	}
 }
