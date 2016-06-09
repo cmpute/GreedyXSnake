@@ -2,6 +2,7 @@ package XSnake;
 
 import java.util.*;
 import java.util.List;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.Serializable;
 import java.awt.*;
@@ -24,19 +25,128 @@ public class Snake implements Serializable{
 		@Override
 		public void DrawObject(Graphics g)
 		{
-			g.drawRect(locx*AreaSize, locy*AreaSize, AreaSize, AreaSize);
-			//TODO: 增加不同方向的身体画法
+			//g.drawRect(locx*AreaSize, locy*AreaSize, AreaSize, AreaSize);
+			DrawObject(g,dir);
+		}
+		public void DrawObject(Graphics g, BodyDirection lastdir)
+		{
+			if((dir.ordinal()-lastdir.ordinal())%2==0) // 同向
+				switch(dir)
+				{
+				case Left:
+				case Right:
+					SnakeBodyPatterns.horizental.DrawTo(g, locx*AreaSize, locy*AreaSize);
+					break;
+				case Up:
+				case Down:
+					SnakeBodyPatterns.vertical.DrawTo(g, locx*AreaSize, locy*AreaSize);
+					break;
+				}
+			else  //转弯
+				switch(dir.ordinal()*4+lastdir.ordinal())
+				{
+				case 3:
+				case 6:
+					SnakeBodyPatterns.UL.DrawTo(g, locx*AreaSize, locy*AreaSize);
+					break;
+				case 1:
+				case 14:
+					SnakeBodyPatterns.DL.DrawTo(g, locx*AreaSize, locy*AreaSize);
+					break;
+				case 4:
+				case 11:
+					SnakeBodyPatterns.UR.DrawTo(g, locx*AreaSize, locy*AreaSize);
+					break;
+				case 9:
+				case 12:
+					SnakeBodyPatterns.DR.DrawTo(g, locx*AreaSize, locy*AreaSize);
+					break;
+				}
 		}
 		public void DrawHead(Graphics g)
 		{
-			g.fillRect(locx*AreaSize, locy*AreaSize, AreaSize+1, AreaSize+1);
+			//g.fillRect(locx*AreaSize, locy*AreaSize, AreaSize+1, AreaSize+1);
+			switch(dir)
+			{
+			case Left:
+				SnakeBodyPatterns.headLeft.DrawTo(g, locx*AreaSize, locy*AreaSize);
+				break;
+			case Right:
+				SnakeBodyPatterns.headRight.DrawTo(g, locx*AreaSize, locy*AreaSize);
+				break;
+			case Up:
+				SnakeBodyPatterns.headUp.DrawTo(g, locx*AreaSize, locy*AreaSize);
+				break;
+			case Down:
+				SnakeBodyPatterns.headDown.DrawTo(g, locx*AreaSize, locy*AreaSize);
+				break;
+			}
+		}public void DrawTail(Graphics g)
+		{
+			//g.fillRect(locx*AreaSize, locy*AreaSize, AreaSize+1, AreaSize+1);
+			switch(dir)
+			{
+			case Left:
+				SnakeBodyPatterns.tailLeft.DrawTo(g, locx*AreaSize, locy*AreaSize);
+				break;
+			case Right:
+				SnakeBodyPatterns.tailRight.DrawTo(g, locx*AreaSize, locy*AreaSize);
+				break;
+			case Up:
+				SnakeBodyPatterns.tailUp.DrawTo(g, locx*AreaSize, locy*AreaSize);
+				break;
+			case Down:
+				SnakeBodyPatterns.tailDown.DrawTo(g, locx*AreaSize, locy*AreaSize);
+				break;
+			}
 		}
 	}
+	public static class SnakeBodyPatterns{
+		public static OffsetImage horizental;
+		public static OffsetImage vertical;
+		public static OffsetImage UR;
+		public static OffsetImage UL;
+		public static OffsetImage DR;
+		public static OffsetImage DL;
+		public static OffsetImage headUp;
+		public static OffsetImage headDown;
+		public static OffsetImage headLeft;
+		public static OffsetImage headRight;
+		public static OffsetImage tailUp;
+		public static OffsetImage tailDown;
+		public static OffsetImage tailLeft;
+		public static OffsetImage tailRight;
+		static {
+			try {
+				SnakeBodyPatterns.horizental = OffsetImage.InitCenterImage(1, "XSnake/horizental.png");
+				SnakeBodyPatterns.vertical = OffsetImage.InitCenterImage(1, "XSnake/vertical.png");
+				SnakeBodyPatterns.UR = OffsetImage.InitCenterImage(1, "XSnake/ur.png");
+				SnakeBodyPatterns.UL = OffsetImage.InitCenterImage(1, "XSnake/ul.png");
+				SnakeBodyPatterns.DR = OffsetImage.InitCenterImage(1, "XSnake/dr.png");
+				SnakeBodyPatterns.DL = OffsetImage.InitCenterImage(1, "XSnake/dl.png");
+				SnakeBodyPatterns.tailUp = OffsetImage.InitCenterImage(1, "XSnake/t_up.png");
+				SnakeBodyPatterns.tailDown = OffsetImage.InitCenterImage(1, "XSnake/t_down.png");
+				SnakeBodyPatterns.tailLeft = OffsetImage.InitCenterImage(1, "XSnake/t_left.png");
+				SnakeBodyPatterns.tailRight = OffsetImage.InitCenterImage(1, "XSnake/t_right.png");
+				SnakeBodyPatterns.headUp = OffsetImage.InitCenterImage(4, "XSnake/h_up.png");
+				SnakeBodyPatterns.headDown = OffsetImage.InitCenterImage(4, "XSnake/h_down.png");
+				SnakeBodyPatterns.headLeft = OffsetImage.InitCenterImage(4, "XSnake/h_left.png");
+				SnakeBodyPatterns.headRight = OffsetImage.InitCenterImage(4, "XSnake/h_right.png");
+			} catch (FileNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+	}
+	
 	/**
 	 * 蛇身的方向枚举，用于绘制身体
 	 */
 	public enum BodyDirection{
-		Left,Up,Right,Down;
+		Left,Up,Right,Down,UL,UR,DL,DR;
 		
 		public static BodyDirection valueOf(int val)
 		{
@@ -89,15 +199,17 @@ public class Snake implements Serializable{
 	 */
 	public void DrawBody(Graphics g)
 	{
+		//TODO 换头
 		if(drawStyle>0)
 			g.setColor(Color.BLACK);
 		else
 			g.setColor(Color.BLUE);
-		for (int i = body.size()-1; i > 0 ; i--) {
-			body.get(i).DrawObject(g);
+		body.get(body.size()-1).DrawTail(g);
+		for (int i = body.size()-2; i > 0 ; i--) {
+			body.get(i).DrawObject(g,body.get(i+1).dir);
 		}
 		body.get(0).DrawHead(g);
-		((Graphics2D)g).drawString("x:"+body.get(0).locx+"y:"+body.get(0).locy, 10, 10); //Debug用
+		//((Graphics2D)g).drawString("x:"+body.get(0).locx+"y:"+body.get(0).locy, 10, 10); //Debug用
 		((Graphics2D)g).drawString(this.score+"", body.get(0).locx*MapObject.AreaSize, body.get(0).locy*MapObject.AreaSize);
 	}
 	/**

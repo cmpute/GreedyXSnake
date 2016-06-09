@@ -1,6 +1,10 @@
 package XSnake;
 import java.awt.*;
 import java.awt.event.*;
+import java.awt.image.*;
+import java.io.*;
+
+import javax.imageio.ImageIO;
 import javax.swing.*;
 
 import XSnake.Snake.BodyDirection;
@@ -18,6 +22,7 @@ public class SnakeGame extends JPanel implements KeyListener{
 	public Obstacle[] obstacles;
 	public WebInterface neti;
 	public int timestamp = 0;
+	public Image background;
 
 	public void keyPressed(KeyEvent arg0) {
 		switch (arg0.getKeyCode()) {
@@ -60,22 +65,38 @@ public class SnakeGame extends JPanel implements KeyListener{
 	public SnakeGame()
 	{
 		MapSets.GenerateMap1(this);
+		background = PaintBackground();
 		//super();
 		
 	}
 
+	public Image PaintBackground()
+	{
+		BufferedImage bg = new BufferedImage((MapMaxX+1) * MapObject.AreaSize, (MapMaxY+1) * MapObject.AreaSize, BufferedImage.TYPE_3BYTE_BGR);
+		Graphics2D g = bg.createGraphics();
+				try {
+					g.drawImage(ImageIO.read(new FileInputStream("XSnake/grass.jpg")), 0 , 0, bg.getWidth(), bg.getHeight()  , this);
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+		bg.flush();
+		return bg;
+	}
+	
 	public void paint(Graphics g)
 	{
 		//TODO: 增加背景以后可以去掉super的repaint
-		super.paint(g);
+		//super.paint(g);
+		g.drawImage(background, 0, 0, this);
 		for(MapEntity e: entities)
 			e.DrawObject(g);
 		if(obstacles!=null)
 			for(Obstacle o: obstacles)
 				o.DrawObject(g);
-		s_self.DrawBody(g);
 		if(snake1!=null)
 			snake1.DrawBody(g);
+		s_self.DrawBody(g);
 	}
 	public void ProcessStep()
 	{
@@ -108,10 +129,6 @@ public class SnakeGame extends JPanel implements KeyListener{
 	public int GetSpeed()
 	{
 		return Sleeptime;
-	}
-	public void SetStatusText(WebInterface.ConnectStatus status)
-	{
-		
 	}
 
 	@Override

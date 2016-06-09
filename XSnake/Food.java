@@ -1,12 +1,18 @@
 package XSnake;
 
 import java.util.*;
-import java.awt.Color;
-import java.awt.Graphics;
+
+import javax.imageio.ImageIO;
+
+import java.awt.*;
+import java.awt.image.*;
+import java.io.FileInputStream;
 
 public class Food extends MapEntity {
 
 	public static final int FoodScore = 10;
+	public static OffsetImage egg;
+
 	public Food(SnakeGame parentMap, int x, int y)
 	{
 		super(parentMap,x,y);
@@ -24,8 +30,9 @@ public class Food extends MapEntity {
 	@Override
 	public void DrawObject(Graphics g) {
 		// TODO Auto-generated method stub
-		g.setColor(Color.GREEN);
-		g.fillRect(locx*AreaSize, locy*AreaSize, AreaSize+1, AreaSize+1);
+		//g.setColor(Color.GREEN);
+		//g.fillRect(locx*AreaSize, locy*AreaSize, AreaSize+1, AreaSize+1);
+		egg.DrawTo(g, locx*AreaSize, locy*AreaSize);
 	}
 	
 	/**
