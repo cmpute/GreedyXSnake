@@ -15,6 +15,7 @@ public class SnakeGame extends JPanel implements KeyListener{
 	public final static int MaxEntityNum = 16;									//最多entity数
 	int Sleeptime = 80;															//刷新时间，控制游戏速度
 	public static boolean NoSideWall = true;									//地图边缘是否可以通过
+	public static boolean HitToDeath = false;									//撞上障碍物以后是暂停还是死亡
 	public boolean[][] GridBlocked = new boolean[MapMaxX][MapMaxY];				//障碍物标志
 	public boolean[][] GridState = new boolean[MapMaxX][MapMaxY];				//是否有物体标志
 	public Snake s_self = new Snake(this), snake1;								//两名玩家
@@ -47,7 +48,7 @@ public class SnakeGame extends JPanel implements KeyListener{
         	neti.PlayerPause();
             break;
         case KeyEvent.VK_P:
-        	//暂停游戏
+        	neti.ChangeGameState();
         	break;
         case KeyEvent.VK_ADD:
         case KeyEvent.VK_PAGE_UP:
@@ -86,7 +87,6 @@ public class SnakeGame extends JPanel implements KeyListener{
 	
 	public void paint(Graphics g)
 	{
-		//TODO: 增加背景以后可以去掉super的repaint
 		//super.paint(g);
 		g.drawImage(background, 0, 0, this);
 		for(MapEntity e: entities)
@@ -101,10 +101,18 @@ public class SnakeGame extends JPanel implements KeyListener{
 	public void ProcessStep()
 	{
 		timestamp++;
-		if(s_self.CheckHit())s_self.Pause();//TODO: 增加撞墙以后的处理
+		if(s_self.CheckHit())
+			if(HitToDeath)
+				;//TODO: 增加死亡以后的处理
+			else
+				s_self.Pause();
 		else s_self.MoveStep();
 		if(snake1!=null)
-		if(snake1.CheckHit())snake1.Pause();//TODO: 增加撞墙以后的处理
+		if(snake1.CheckHit())
+			if(HitToDeath)
+				;//TODO: 增加死亡以后的处理
+			else
+				snake1.Pause();
 		else snake1.MoveStep();
 	}
 	public void SetStepTime(int steptime)

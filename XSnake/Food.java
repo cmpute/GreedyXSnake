@@ -1,12 +1,6 @@
 package XSnake;
 
-import java.util.*;
-
-import javax.imageio.ImageIO;
-
 import java.awt.*;
-import java.awt.image.*;
-import java.io.FileInputStream;
 
 public class Food extends MapEntity {
 
@@ -45,6 +39,7 @@ public class Food extends MapEntity {
 	{
 		eator.AddBody(1); //改成eator.AddBody()就是在蛇头增加
 		eator.score += FoodScore;
+		new SoundEffect("XSnake/goldenegg.wav",false).start();
 		this.GenerateLocation();
 	}
 }

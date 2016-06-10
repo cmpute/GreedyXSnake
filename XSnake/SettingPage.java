@@ -14,7 +14,7 @@ public class SettingPage extends JPanel {
 	private XSnake_GUI par;
 	
 	JTextField textx,texty;
-	JCheckBox isWall,canTurnBack,colli;
+	JCheckBox isWall,canTurnBack,colli,hitd;
 	
 	public void InitComponent()
 	{
@@ -51,6 +51,10 @@ public class SettingPage extends JPanel {
 		colli = new JCheckBox("蛇身视为障碍物", Snake.Collidable);
 		sw2.add(colli);
 		snakesetting.add(sw2);
+		JPanel sw3 = new JPanel();
+		hitd = new JCheckBox("蛇撞墙后死亡(不死亡则暂停)", SnakeGame.HitToDeath);
+		sw3.add(hitd);
+		snakesetting.add(sw3);
 		this.add(snakesetting);
 		this.add(new JSeparator(JSeparator.HORIZONTAL));
 		JPanel bp = new JPanel();
@@ -68,6 +72,7 @@ public class SettingPage extends JPanel {
 				Snake.CanTurnBack = canTurnBack.isSelected();
 				Snake.Collidable = colli.isSelected();
 				SnakeGame.NoSideWall = isWall.isSelected();
+				SnakeGame.HitToDeath = hitd.isSelected();
 			}
 		});
 		bp.add(Save);

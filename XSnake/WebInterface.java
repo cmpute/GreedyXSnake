@@ -10,7 +10,7 @@ public class WebInterface
 {
 	SnakeGame host;
 	Socket connect;
-	boolean isserver,gamestarted=false,gameNpaused=true;
+	boolean isserver,gamestarted=false,gamepaused=false;
 	ConnectStatus stat = ConnectStatus.NoTask;
 	public enum ConnectStatus
 	{
@@ -24,7 +24,9 @@ public class WebInterface
 	static final int PLAYER_PAUSE=0x0022;
 	static final int SPEED_UP=0x0023;
 	static final int SPEED_DOWN=0x0024;
-	static final int SYNC_ENTITY=0x0030;
+	static final int GAME_PAUSE=0x0025;
+	static final int GAME_TICK=0x0030;
+	static final int SYNC_ENTITY=0x0031;
 	public WebInterface(Socket connect, boolean isServer)
 	{
 		this.connect = connect;
@@ -76,6 +78,7 @@ public class WebInterface
 	    oos.writeBoolean(SnakeGame.NoSideWall);
 	    oos.writeBoolean(Snake.CanTurnBack);
 	    oos.writeBoolean(Snake.Collidable);
+	    oos.writeBoolean(SnakeGame.HitToDeath);
 	    oos.flush();
 	    //TODO: 同步地图信息（障碍物位置)
 		if(connect.getInputStream().read()!=MAP_PARAMS)
@@ -92,6 +95,7 @@ public class WebInterface
 		SnakeGame.NoSideWall = ois.readBoolean();
 		Snake.CanTurnBack = ois.readBoolean();
 		Snake.Collidable = ois.readBoolean();
+		SnakeGame.HitToDeath = ois.readBoolean();
 		connect.getOutputStream().write(MAP_PARAMS);
 		connect.getOutputStream().flush();
 		return true;
@@ -143,16 +147,23 @@ public class WebInterface
 	public void StartGameThread()
 	{
 		gamestarted = true;
+		new SoundEffect("XSnake/loveinbox.wav",true).start();
 		//刷新线程
+		if(isserver)
 		new Thread(new Runnable(){
 			public void run() {
-				while (gameNpaused) {
+				while (true) {
+					System.out.print(""); //这行没有意义，但是不加入这一行暂停以后无法继续，尚未弄清原因
+					if(gamepaused)
+						continue;
 					try {
 						Thread.sleep(host.Sleeptime);
+						connect.getOutputStream().write(GAME_TICK);
 						//host.neti.SyncMap();
 						host.ProcessStep();
 						host.repaint();
-					} catch (InterruptedException e) {	e.printStackTrace();}
+					} catch (InterruptedException e) {	e.printStackTrace();} 
+					  catch (IOException e) {	e.printStackTrace();}
 				}
 			}
 		}).start();
@@ -187,11 +198,27 @@ public class WebInterface
 						case SPEED_DOWN:
 							host.SpeedDown();
 							break;
+						case GAME_TICK:
+							host.ProcessStep();
+							host.repaint();
+							break;
+						case GAME_PAUSE:
+							gamepaused = !gamepaused;
+							break;
 						}
 					}
 				} catch (IOException ie) {JOptionPane.showMessageDialog(null, "连接错误:"+ie.getMessage(), "错误", JOptionPane.ERROR_MESSAGE);ie.printStackTrace();}
 			}
 		}).start();
+	}
+	
+	/**
+	 * 使游戏停止或继续
+	 */
+	public void ChangeGameState()
+	{
+		gamepaused = !gamepaused;
+		new ParamThread(GAME_PAUSE).start();
 	}
 	
 	public void SendDirection()
