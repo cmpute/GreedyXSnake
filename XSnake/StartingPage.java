@@ -9,6 +9,10 @@ import java.net.Socket;
 
 import javax.swing.*;
 
+/**
+ * 开始游戏页面
+ */
+@SuppressWarnings("serial")
 public class StartingPage extends JPanel implements ActionListener{
 	public StartingPage(XSnake_GUI parent)
 	{
@@ -32,8 +36,8 @@ public class StartingPage extends JPanel implements ActionListener{
 		joinserver.addActionListener(this);
 		lbl_address = new JLabel("请输入服务器地址");
 		lbl_port = new JLabel("请输入端口号");
-		txt_address = new JTextField(9);
-		txt_port = new JTextField(3);
+		txt_address = new JTextField(12);
+		txt_port = new JTextField(4);
 		txt_port.setText(String.valueOf(portnum));
 		
 		JPanel area = new JPanel();
@@ -90,7 +94,6 @@ public class StartingPage extends JPanel implements ActionListener{
 				JOptionPane.showMessageDialog(null, "端口输入范围为0~65535", "输入错误", JOptionPane.ERROR_MESSAGE);
 				return;
 			}
-			back.setEnabled(false);
 			new Thread(new Runnable(){
 				public void run(){
 					try{
@@ -101,7 +104,7 @@ public class StartingPage extends JPanel implements ActionListener{
 						lbl_status.setText("玩家"+connect.getInetAddress().toString()+"已连入，同步游戏设定中");
 						WebInterface wi = new WebInterface(connect, true);
 						wi.SyncParam();
-						gamemap = new SnakeGame();
+						gamemap = new SnakeGame(null);
 						wi.AssociateGame(gamemap);
 						wi.SyncSnake();
 						lbl_status.setText("同步成功，游戏即将开始...3");
@@ -140,14 +143,13 @@ public class StartingPage extends JPanel implements ActionListener{
 			}
 			txt_address.setText(tarip.getHostAddress());
 
-			back.setEnabled(false);
 			try
 			{
 				Socket connect = new Socket(tarip,portnum);
 				lbl_status.setText("已连接服务器"+connect.getInetAddress().toString()+"，等待地图数据同步");
 				WebInterface wi = new WebInterface(connect, false);
 				wi.WaitForParam();
-				gamemap = new SnakeGame();
+				gamemap = new SnakeGame(null);
 				wi.AssociateGame(gamemap);
 				wi.WaitForSnake();
 				lbl_status.setText("同步成功，游戏即将开始...3");
@@ -177,12 +179,6 @@ public class StartingPage extends JPanel implements ActionListener{
 	
 	public void StartGame()
 	{
-		JFrame Game = new JFrame();
-		Game.add(gamemap);
-		Game.setTitle("Greedy Snake");
-		Game.addKeyListener(gamemap);
-		gamemap.neti.StartGameThread();
-		Game.setBounds(par.getBounds().x+200,par.getBounds().y+100,805,610);
-		Game.setVisible(true);
+		new GamePage(gamemap,par.getBounds().x+200,par.getBounds().y+100);
 	}
 }

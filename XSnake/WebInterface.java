@@ -2,8 +2,6 @@ package XSnake;
 
 import java.io.*;
 import java.net.*;
-import java.util.List;
-
 import javax.swing.JOptionPane;
 
 public class WebInterface
@@ -25,6 +23,7 @@ public class WebInterface
 	static final int SPEED_UP=0x0023;
 	static final int SPEED_DOWN=0x0024;
 	static final int GAME_PAUSE=0x0025;
+	static final int GAME_BREAK=0x0026;
 	static final int GAME_TICK=0x0030;
 	static final int SYNC_ENTITY=0x0031;
 	public WebInterface(Socket connect, boolean isServer)
@@ -147,7 +146,7 @@ public class WebInterface
 	public void StartGameThread()
 	{
 		gamestarted = true;
-		new SoundEffect("XSnake/loveinbox.wav",true).start();
+		
 		//刷新线程
 		if(isserver)
 		new Thread(new Runnable(){
@@ -174,6 +173,7 @@ public class WebInterface
 				try {
 					ins = connect.getInputStream();
 					while (gamestarted){
+						System.out.print("");
 						int temp = ins.read();
 						//判断信息
 						if(temp<0x0010){
@@ -205,9 +205,15 @@ public class WebInterface
 						case GAME_PAUSE:
 							gamepaused = !gamepaused;
 							break;
+						case GAME_BREAK:
+							gamestarted=false;
+							gamepaused=true;
+							connect.close();
+							host.GameEnd(0);
+							break;
 						}
 					}
-				} catch (IOException ie) {JOptionPane.showMessageDialog(null, "连接错误:"+ie.getMessage(), "错误", JOptionPane.ERROR_MESSAGE);ie.printStackTrace();}
+				} catch (IOException ie) {ie.printStackTrace();}
 			}
 		}).start();
 	}
@@ -220,17 +226,20 @@ public class WebInterface
 		gamepaused = !gamepaused;
 		new ParamThread(GAME_PAUSE).start();
 	}
-	
+	/*************************     以下函数为对通信过程的封装        **************************/
 	public void SendDirection()
 	{
 		new ParamThread(DIRECT_CHANGE + host.s_self.body.get(0).dir.ordinal()).start();
 	}
-	
 	public void PlayerPause()
 	{
 		new ParamThread(PLAYER_PAUSE).start();
 	}
-	
+	public void GametoEnd()
+	{
+		new ParamThread(GAME_BREAK).start();
+		gamestarted = false;
+	}
 	public void SpeedUp()
 	{
 		new ParamThread(SPEED_UP).start();
@@ -263,6 +272,8 @@ public class WebInterface
 				public void run() {
 					try {
 						connect.getOutputStream().write(param);
+						if(param==GAME_BREAK) 
+							connect.close();
 					} catch (IOException ie) {JOptionPane.showMessageDialog(null, "连接错误:"+ie.getMessage(), "错误", JOptionPane.ERROR_MESSAGE);ie.printStackTrace();}
 				}
 			}).start();

@@ -4,15 +4,14 @@ import java.util.*;
 import java.util.List;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.Serializable;
 import java.awt.*;
 
-public class Snake implements Serializable{
+public class Snake{
 
 	/**
 	 * 蛇的身体类
 	 */
-	public class SnakeBody extends MapObject implements Serializable
+	public class SnakeBody extends MapObject
 	{
 		BodyDirection dir;
 		public SnakeBody(int x, int y, BodyDirection direction)
@@ -40,6 +39,8 @@ public class Snake implements Serializable{
 				case Up:
 				case Down:
 					SnakeBodyPatterns.vertical.DrawTo(g, locx*AreaSize, locy*AreaSize);
+					break;
+				default:
 					break;
 				}
 			else  //转弯
@@ -80,8 +81,11 @@ public class Snake implements Serializable{
 			case Down:
 				SnakeBodyPatterns.headDown.DrawTo(g, locx*AreaSize, locy*AreaSize);
 				break;
+			default:
+				break;
 			}
-		}public void DrawTail(Graphics g)
+		}
+		public void DrawTail(Graphics g)
 		{
 			//g.fillRect(locx*AreaSize, locy*AreaSize, AreaSize+1, AreaSize+1);
 			switch(dir)
@@ -97,6 +101,8 @@ public class Snake implements Serializable{
 				break;
 			case Down:
 				SnakeBodyPatterns.tailDown.DrawTo(g, locx*AreaSize, locy*AreaSize);
+				break;
+			default:
 				break;
 			}
 		}
@@ -118,26 +124,22 @@ public class Snake implements Serializable{
 		public static OffsetImage tailRight;
 		static {
 			try {
-				SnakeBodyPatterns.horizental = OffsetImage.InitCenterImage(1, "XSnake/horizental.png");
-				SnakeBodyPatterns.vertical = OffsetImage.InitCenterImage(1, "XSnake/vertical.png");
-				SnakeBodyPatterns.UR = OffsetImage.InitCenterImage(1, "XSnake/ur.png");
-				SnakeBodyPatterns.UL = OffsetImage.InitCenterImage(1, "XSnake/ul.png");
-				SnakeBodyPatterns.DR = OffsetImage.InitCenterImage(1, "XSnake/dr.png");
-				SnakeBodyPatterns.DL = OffsetImage.InitCenterImage(1, "XSnake/dl.png");
-				SnakeBodyPatterns.tailUp = OffsetImage.InitCenterImage(1, "XSnake/t_up.png");
-				SnakeBodyPatterns.tailDown = OffsetImage.InitCenterImage(1, "XSnake/t_down.png");
-				SnakeBodyPatterns.tailLeft = OffsetImage.InitCenterImage(1, "XSnake/t_left.png");
-				SnakeBodyPatterns.tailRight = OffsetImage.InitCenterImage(1, "XSnake/t_right.png");
-				SnakeBodyPatterns.headUp = OffsetImage.InitCenterImage(4, "XSnake/h_up.png");
-				SnakeBodyPatterns.headDown = OffsetImage.InitCenterImage(4, "XSnake/h_down.png");
-				SnakeBodyPatterns.headLeft = OffsetImage.InitCenterImage(4, "XSnake/h_left.png");
-				SnakeBodyPatterns.headRight = OffsetImage.InitCenterImage(4, "XSnake/h_right.png");
-			} catch (FileNotFoundException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				SnakeBodyPatterns.horizental = OffsetImage.InitCenterImage(1, XSnake_GUI.pathhead + "horizental.png");
+				SnakeBodyPatterns.vertical = OffsetImage.InitCenterImage(1, XSnake_GUI.pathhead + "vertical.png");
+				SnakeBodyPatterns.UR = OffsetImage.InitCenterImage(1, XSnake_GUI.pathhead + "ur.png");
+				SnakeBodyPatterns.UL = OffsetImage.InitCenterImage(1, XSnake_GUI.pathhead + "ul.png");
+				SnakeBodyPatterns.DR = OffsetImage.InitCenterImage(1, XSnake_GUI.pathhead + "dr.png");
+				SnakeBodyPatterns.DL = OffsetImage.InitCenterImage(1, XSnake_GUI.pathhead + "dl.png");
+				SnakeBodyPatterns.tailUp = OffsetImage.InitCenterImage(1, XSnake_GUI.pathhead + "t_up.png");
+				SnakeBodyPatterns.tailDown = OffsetImage.InitCenterImage(1, XSnake_GUI.pathhead + "t_down.png");
+				SnakeBodyPatterns.tailLeft = OffsetImage.InitCenterImage(1, XSnake_GUI.pathhead + "t_left.png");
+				SnakeBodyPatterns.tailRight = OffsetImage.InitCenterImage(1, XSnake_GUI.pathhead + "t_right.png");
+				SnakeBodyPatterns.headUp = OffsetImage.InitCenterImage(4, XSnake_GUI.pathhead + "h_up.png");
+				SnakeBodyPatterns.headDown = OffsetImage.InitCenterImage(4, XSnake_GUI.pathhead + "h_down.png");
+				SnakeBodyPatterns.headLeft = OffsetImage.InitCenterImage(4, XSnake_GUI.pathhead + "h_left.png");
+				SnakeBodyPatterns.headRight = OffsetImage.InitCenterImage(4, XSnake_GUI.pathhead + "h_right.png");
+			} catch (FileNotFoundException e) {	e.printStackTrace();
+			} catch (IOException e) { e.printStackTrace();
 			}
 		}
 	}
@@ -210,7 +212,7 @@ public class Snake implements Serializable{
 		}
 		body.get(0).DrawHead(g);
 		//((Graphics2D)g).drawString("x:"+body.get(0).locx+"y:"+body.get(0).locy, 10, 10); //Debug用
-		((Graphics2D)g).drawString(this.score+"", body.get(0).locx*MapObject.AreaSize, body.get(0).locy*MapObject.AreaSize);
+		//((Graphics2D)g).drawString(this.score+"", body.get(0).locx*MapObject.AreaSize, body.get(0).locy*MapObject.AreaSize);
 	}
 	/**
 	 * 判断是否撞上
@@ -299,7 +301,6 @@ public class Snake implements Serializable{
 		}
 		body.get(0).dir = direction;
 		GenerateNext();
-		//TODO: Socket发送方向信息
 	}
 	
 	private void GenerateNext()
@@ -342,6 +343,8 @@ public class Snake implements Serializable{
 					CrossWall = true;
 			}
 			nextpart = new SnakeBody(head.locx, head.locy + 1, head.dir);
+			break;
+		default:
 			break;
 		}
 	}

@@ -23,7 +23,6 @@ public class Food extends MapEntity {
 	
 	@Override
 	public void DrawObject(Graphics g) {
-		// TODO Auto-generated method stub
 		//g.setColor(Color.GREEN);
 		//g.fillRect(locx*AreaSize, locy*AreaSize, AreaSize+1, AreaSize+1);
 		egg.DrawTo(g, locx*AreaSize, locy*AreaSize);

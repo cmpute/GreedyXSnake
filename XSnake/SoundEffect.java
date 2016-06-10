@@ -1,29 +1,33 @@
 package XSnake;
 
-import java.io.*;
+import javax.sound.sampled.*;
 
-import javax.sound.sampled.*;;
-
+/**
+ * 播放声音的封装工具类， 播放时新建线程异步播放
+ */
 public class SoundEffect extends Thread{
 	String file;
 	boolean isloop;
 	boolean state = true;
 	
-	public static boolean muteall = true;		//是否静音
+	public static boolean muteall = false;		//是否静音，作为静态环境变量
 	public SoundEffect(String musicFile, boolean loop)
 	{
 		file = musicFile;
 		isloop = loop;
 	}
+	//停止音乐播放
 	public void StopSound()
 	{
 		state = false;
 	}
+	@Override
 	public void run()
 	{
 		try
 		{
-			AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(new File(file));
+			//System.out.println(XSnake_GUI.loader.getResource(file));
+			AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(XSnake_GUI.loader.getResourceAsStream(file));
 			// 获取音频编码对象
 			AudioFormat audioFormat = audioInputStream.getFormat();
 			// 设置数据输入
@@ -36,7 +40,7 @@ public class SoundEffect extends Thread{
 			byte tempBuffer[] = new byte[1024];
 			while (state&&((count = audioInputStream.read(tempBuffer, 0, tempBuffer.length)) != -1)) {
 				if (muteall)
-					continue;
+					{System.out.println("");continue;}
 				if (count > 0) {
 					sourceDataLine.write(tempBuffer, 0, count);
 				}
@@ -44,8 +48,8 @@ public class SoundEffect extends Thread{
 			// 清空数据缓冲,并关闭输入
 			sourceDataLine.drain();
 			sourceDataLine.close();
-			if(isloop)
+			if(isloop && state)
 				run();
-		}catch(Exception e){e.printStackTrace();}
+		} catch(Exception e) {e.printStackTrace();}
 	}	
 }

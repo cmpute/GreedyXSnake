@@ -4,6 +4,10 @@ import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 
+/**
+ * 设置页面
+ */
+@SuppressWarnings("serial")
 public class SettingPage extends JPanel {
 
 	public SettingPage(XSnake_GUI parent)
@@ -52,7 +56,7 @@ public class SettingPage extends JPanel {
 		sw2.add(colli);
 		snakesetting.add(sw2);
 		JPanel sw3 = new JPanel();
-		hitd = new JCheckBox("蛇撞墙后死亡(不死亡则暂停)", SnakeGame.HitToDeath);
+		hitd = new JCheckBox("撞墙后游戏结束(不死亡则暂停)", SnakeGame.HitToDeath);
 		sw3.add(hitd);
 		snakesetting.add(sw3);
 		this.add(snakesetting);
