@@ -6,18 +6,18 @@ import javax.swing.*;
 /**
  * 帮助页面
  */
-@SuppressWarnings("serial")
-public class HelpPage extends JPanel
-{
-	public HelpPage(XSnake_GUI parent)
-	{
+ @ SuppressWarnings("serial")
+public class HelpPage extends JPanel{
+	public HelpPage(XSnake_GUI parent) {
 		InitComponent();
 		par = parent;
 	}
-	private XSnake_GUI par;	
-	public void InitComponent()
-	{
-		this.setLayout(new BoxLayout(this,BoxLayout.Y_AXIS));
+	private XSnake_GUI par;
+	/**
+	 * 初始化页面
+	 */
+	public void InitComponent() {
+		this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 		this.add(new JLabel("贪吃蛇XSnake"));
 		this.add(new JLabel("作者：钟元鑫 2014010812 汽42"));
 		this.add(new JLabel(" "));
@@ -36,11 +36,9 @@ public class HelpPage extends JPanel
 		this.add(new JLabel("		若勾选了'蛇身视为障碍物'，那么撞到蛇身上就算撞到了障碍物"));
 		this.add(new JLabel("		若未勾选'蛇身视为障碍物'，那么蛇撞到自身也不会死"));
 		this.add(new JSeparator(JSeparator.HORIZONTAL));
-		//TODO:增加帮助文字
 		JButton Back = new JButton("返回");
-		Back.addActionListener(new ActionListener(){
-			public void actionPerformed(ActionEvent e)
-			{
+		Back.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
 				par.setContentPane(par.init);
 				par.revalidate();
 				par.pack();
